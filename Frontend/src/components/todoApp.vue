@@ -53,7 +53,9 @@
               </th>
 
               <th>
-                <i class="fa-regular fa-trash-can"></i>
+                <span @click="deleteTask(task.id)">
+                  <i class="fa-regular fa-trash-can"></i>
+                </span>
               </th>
 
             </tr>
@@ -97,16 +99,24 @@ export default {
     submitTask() {
       if (this.task == 0) return;
       if (this.isEditTask==null){
-          this.tasks.push({
+
+        axios({
+        method: "post",
+        url: "http://127.0.0.1:8000/tasks/api/",
+        data: {
           name: this.task,
-          status: 'todo'
-        })
+          status: 'todo',
+        }
+        }).then(() => {this.getTasks()})
+          
+       
       }
       else{
         this.tasks.find(task => task.id === this.isEditTask).name  = this.task
       }
       
       this.task = ""
+      this.isEditTask = null
     },
     changesStatus(index){
       let newIndex = this.availableStatus.indexOf(this.tasks.find(task => task.id === index).status)
@@ -114,7 +124,12 @@ export default {
       this.tasks.find(task => task.id === index).status = this.availableStatus[newIndex]
     },
     deleteTask(index) {
-      this.tasks.splice(index, 1);
+      axios({
+        method: "delete",
+        url: 'http://127.0.0.1:8000/tasks/api/'+index+'/',
+      }).then(() => {
+        this.getTasks();
+      })
     },
     editTask(index) {
       this.task = this.tasks.find(task => task.id === index).name
