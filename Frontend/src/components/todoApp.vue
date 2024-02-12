@@ -1,7 +1,7 @@
 <template>
   <body>
     <div class="container">
-      <h2 class="text-center pt-4">Todo App</h2>
+      <h2 class="text-center pt-4 text-white">Todo App</h2>
       <div class="d-flex mt-5">
         <input
           type="text"
@@ -31,37 +31,37 @@
                   {{ task.name }}
                 </span>
               </th>
-              <td>
-                <span
-                  @click="editStatus(task.id)"
-                  class="poinyrt"
-                  :class="{
-                    'text-danger': task.status == 'todo',
-                    'text-warning': task.status == 'inprogress',
-                    'text-success': task.status == 'doing',
-                  }"
+
+              <th>
+                <span 
+                @click="changesStatus(task.id)"
+                class="poinyrt"
+                :class="{
+                  'text-danger': task.status == 'todo',
+                  'text-warning': task.status == 'inprogress',
+                  'text-success': task.status == 'doing',
+                }"
                 >
                   {{ task.status }}
                 </span>
-              </td>
-              <td>
-                <div @click="editTask(task.id)">
-                  <samp class="poinyrt">
-                    <i class="fa-regular fa-pen-to-square"></i
-                  ></samp>
-                </div>
-              </td>
-              <td>
-                <div @click="deleteTask(task.id)">
-                  <samp class="poinyrt"
-                    ><i class="fa-regular fa-trash-can"></i
-                  ></samp>
-                </div>
-              </td>
+              </th>
+
+              <th>
+                <span @click="editTask(task.id)">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </span>
+              </th>
+
+              <th>
+                <i class="fa-regular fa-trash-can"></i>
+              </th>
+
             </tr>
           </tbody>
         </table>
       </div>
+
+      
     </div>
   </body>
 </template>
@@ -78,6 +78,7 @@ export default {
     return {
       task: "",
       isEditTask: null,
+      availableStatus:['todo', 'inprogress', 'doing'],
       tasks: [],
     };
   },
@@ -88,40 +89,36 @@ export default {
 
   methods: {
     getTasks(){
-
-        axios({
-            method:"get",
-            url:"http://127.0.0.1:8000/tasks/api",
-          }).then(response => this.tasks = response.data)
-        },
-
+      axios({
+        method: "get",
+        url: "http://127.0.0.1:8000/tasks/api/",
+        }).then(response =>this.tasks = response.data)
+    },
     submitTask() {
-      if (this.task == "") return;
-      if (this.isEditTask == null) {
-        this.tasks.push({ name: this.task, status: "todo" });
-      } else {
-        this.tasks[this.isEditTask].name = this.task;
-        this.isEditTask = null;
+      if (this.task == 0) return;
+      if (this.isEditTask==null){
+          this.tasks.push({
+          name: this.task,
+          status: 'todo'
+        })
       }
-
-      this.task = "";
-    },
-    editStatus(index) {
-      if (this.tasks[index].status == "todo") {
-        this.tasks[index].status = "inprogress";
-      } else if (this.tasks[index].status == "inprogress") {
-        this.tasks[index].status = "doing";
-      } else if (this.tasks[index].status == "doing") {
-        this.tasks[index].status = "todo";
+      else{
+        this.tasks.find(task => task.id === this.isEditTask).name  = this.task
       }
+      
+      this.task = ""
     },
-
+    changesStatus(index){
+      let newIndex = this.availableStatus.indexOf(this.tasks.find(task => task.id === index).status)
+      if (++newIndex > 2 ) newIndex = 0
+      this.tasks.find(task => task.id === index).status = this.availableStatus[newIndex]
+    },
     deleteTask(index) {
       this.tasks.splice(index, 1);
     },
-
     editTask(index) {
-      (this.task = this.tasks[index].name), (this.isEditTask = index);
+      this.task = this.tasks.find(task => task.id === index).name
+      this.isEditTask = index
     },
   },
 };
